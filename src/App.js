@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-// ── Design tokens (Versión Morada Nutricionista) ───────────────────────────
+// ── Design tokens ──────────────────────────────────────────────────────────
 const C = {
   bg: "#F5F0FA",
   card: "#FFFFFF",
-  green: "#6B21A8",      // Morado principal
-  greenLight: "#A855F7", // Morado claro
-  greenPale: "#EDE9FE",  // Morado pálido
-  teal: "#4C1D95",       // Morado oscuro
+  green: "#6B21A8",
+  greenLight: "#A855F7",
+  greenPale: "#EDE9FE",
+  teal: "#4C1D95",
   accent: "#E76F51",
   accentLight: "#FFF0EB",
   text: "#1A1A2E",
@@ -35,42 +35,64 @@ const globalStyle = `
   .slide-in { animation:slideIn 0.32s ease forwards; }
 `;
 
-// ── Data Mock ──────────────────────────────────────────────────────────────
-const PATIENTS = [
-  { id: 1, name: "María González", type: "Embarazada", age: 28, condition: "Diabetes gestacional", nextControl: "2026-05-18", adherence: 85, weight: 68, glucose: 105, pressure: "118/75", exercise: 3, avatar: "MG", status: "ok" },
-  { id: 2, name: "Carlos Ruiz", type: "Adulto", age: 54, condition: "Hipertensión + Dislipidemia", nextControl: "2026-05-14", adherence: 62, weight: 84, glucose: 124, pressure: "142/88", exercise: 1, avatar: "CR", status: "alert" },
-  { id: 3, name: "Sofía Mendoza", type: "Adulto Mayor", age: 67, condition: "Diabetes tipo 2", nextControl: "2026-05-20", adherence: 91, weight: 72, glucose: 95, pressure: "128/80", exercise: 4, avatar: "SM", status: "ok" },
-  { id: 4, name: "Ana Torres", type: "Nodriza", age: 31, condition: "Seguimiento lactancia", nextControl: "2026-05-16", adherence: 78, weight: 62, glucose: 88, pressure: "110/70", exercise: 2, avatar: "AT", status: "ok" },
-  { id: 5, name: "Lucas Pérez", type: "Bebé (mamá)", age: 26, condition: "Alimentación complementaria", nextControl: "2026-05-22", adherence: 70, weight: 58, glucose: 90, pressure: "112/72", exercise: 0, avatar: "LP", status: "pending" },
+// ── Initial data (lives in React state) ───────────────────────────────────
+const DEFAULT_HABITS = [
+  "Desayuno completo",
+  "Agua >= 8 vasos",
+  "Colaciones planificadas",
+  "Cena ligera",
+  "Sin azucar anadida",
+  "Frutas/verduras 5 porciones",
+];
+
+const INITIAL_PATIENTS = [
+  { id: 1, name: "Maria Gonzalez",  type: "Embarazada",   age: 28, condition: "Diabetes gestacional",        nextControl: "2026-05-18", adherence: 85, weight: 68, glucose: 105, pressure: "118/75", exercise: 3, avatar: "MG", status: "ok",      rut: "12.345.678-9", habits: [...DEFAULT_HABITS] },
+  { id: 2, name: "Carlos Ruiz",     type: "Adulto",       age: 54, condition: "Hipertension + Dislipidemia", nextControl: "2026-05-14", adherence: 62, weight: 84, glucose: 124, pressure: "142/88", exercise: 1, avatar: "CR", status: "alert",   rut: "8.765.432-1",  habits: [...DEFAULT_HABITS] },
+  { id: 3, name: "Sofia Mendoza",   type: "Adulto Mayor", age: 67, condition: "Diabetes tipo 2",             nextControl: "2026-05-20", adherence: 91, weight: 72, glucose: 95,  pressure: "128/80", exercise: 4, avatar: "SM", status: "ok",      rut: "5.111.222-3",  habits: [...DEFAULT_HABITS] },
+  { id: 4, name: "Ana Torres",      type: "Nodriza",      age: 31, condition: "Seguimiento lactancia",       nextControl: "2026-05-16", adherence: 78, weight: 62, glucose: 88,  pressure: "110/70", exercise: 2, avatar: "AT", status: "ok",      rut: "",             habits: [...DEFAULT_HABITS] },
+  { id: 5, name: "Lucas Perez",     type: "Bebe (mama)",  age: 26, condition: "Alimentacion complementaria", nextControl: "2026-05-22", adherence: 70, weight: 58, glucose: 90,  pressure: "112/72", exercise: 0, avatar: "LP", status: "pending", rut: "",             habits: [...DEFAULT_HABITS] },
+];
+
+const INITIAL_VALID_CODES = [
+  { code: "MG-2847", rut: "12.345.678-9", patientId: 1 },
+  { code: "CR-5512", rut: "8.765.432-1",  patientId: 2 },
+  { code: "SM-9901", rut: "5.111.222-3",  patientId: 3 },
 ];
 
 const DOUBTS = [
-  { id: 1, patient: "María González", question: "¿Puedo comer fruta en la noche aunque tenga diabetes gestacional?", date: "2026-05-09", answered: false },
-  { id: 2, patient: "Carlos Ruiz", question: "¿El aguacate está permitido con mi plan de dislipidemia?", date: "2026-05-08", answered: false },
-  { id: 3, patient: "Sofía Mendoza", question: "¿Cuántas porciones de carbohidrato puedo tener en el almuerzo?", date: "2026-05-07", answered: true, answer: "Para tu caso, te recomiendo 2 porciones de carbohidrato de bajo índice glucémico en el almuerzo." },
+  { id: 1, patient: "Maria Gonzalez", question: "Puedo comer fruta en la noche aunque tenga diabetes gestacional?", date: "2026-05-09", answered: false },
+  { id: 2, patient: "Carlos Ruiz",    question: "El aguacate esta permitido con mi plan de dislipidemia?",          date: "2026-05-08", answered: false },
+  { id: 3, patient: "Sofia Mendoza",  question: "Cuantas porciones de carbohidrato puedo tener en el almuerzo?",    date: "2026-05-07", answered: true, answer: "Para tu caso, te recomiendo 2 porciones de carbohidrato de bajo indice glucemico en el almuerzo." },
 ];
 
 const MATERIALS = [
-  { id: 1, title: "Guía de porciones para diabéticos", type: "PDF", category: "ECNT", date: "2026-04-20", downloads: 12 },
-  { id: 2, title: "Alimentación durante la lactancia", type: "PDF", category: "Maternidad", date: "2026-04-15", downloads: 8 },
-  { id: 3, title: "Lista de alimentos permitidos - HTA", type: "PDF", category: "ECNT", date: "2026-04-10", downloads: 15 },
-  { id: 4, title: "Recetas saludables para el adulto mayor", type: "PDF", category: "Adulto Mayor", date: "2026-03-28", downloads: 6 },
+  { id: 1, title: "Guia de porciones para diabeticos",      type: "PDF", category: "ECNT",         date: "2026-04-20", downloads: 12 },
+  { id: 2, title: "Alimentacion durante la lactancia",      type: "PDF", category: "Maternidad",    date: "2026-04-15", downloads: 8  },
+  { id: 3, title: "Lista de alimentos permitidos - HTA",    type: "PDF", category: "ECNT",         date: "2026-04-10", downloads: 15 },
+  { id: 4, title: "Recetas saludables para el adulto mayor", type: "PDF", category: "Adulto Mayor", date: "2026-03-28", downloads: 6  },
 ];
 
-const HABITS = ["Desayuno completo", "Agua ≥ 8 vasos", "Colaciones planificadas", "Cena ligera", "Sin azúcar añadida", "Frutas/verduras 5 porciones"];
-
-const VALID_CODES = [
-  {code:"MG-2847", rut:"12.345.678-9", patientId:1},
-  {code:"CR-5512", rut:"8.765.432-1",  patientId:2},
-  {code:"SM-9901", rut:"5.111.222-3",  patientId:3},
-];
+const PATIENT_TYPES = ["Embarazada", "Nodriza", "Adulto", "Adulto Mayor", "Bebe (mama)"];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const statusColor = (s) => ({ ok: C.greenLight, alert: C.accent, pending: C.accentLight }[s] || C.muted);
-const typeColor = (t) => ({ Embarazada: "#E0BBE4", Nodriza: "#FFC8A2", Adulto: "#C4B5FD", "Adulto Mayor": "#C7CEEA", "Bebé (mamá)": "#FFDAC1" }[t] || C.greenPale);
-const daysUntil = (d) => { const diff = new Date(d) - new Date("2026-05-10"); return Math.ceil(diff / 86400000); };
+const typeColor   = (t) => ({ Embarazada: "#E0BBE4", Nodriza: "#FFC8A2", Adulto: "#C4B5FD", "Adulto Mayor": "#C7CEEA", "Bebe (mama)": "#FFDAC1" }[t] || C.greenPale);
+const daysUntil   = (d) => { const diff = new Date(d) - new Date("2026-05-10"); return Math.ceil(diff / 86400000); };
+const normalize   = (s) => s.replace(/[-\s]/g, "").toUpperCase();
 
-// ── Components ─────────────────────────────────────────────────────────────
+const generateCode = (name, existingCodes) => {
+  const parts = name.trim().split(/\s+/);
+  const initials = ((parts[0]?.[0] || "X") + (parts[1]?.[0] || "X")).toUpperCase();
+  let code, attempts = 0;
+  do {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    code = `${initials}-${num}`;
+    attempts++;
+  } while (existingCodes.some(c => c.code === code) && attempts < 100);
+  return code;
+};
+
+// ── Base Components ────────────────────────────────────────────────────────
 const Logo = ({ height = 40, style = {} }) => (
   <img src="logo-nutrilife.png" alt="NutriLife" style={{ height, objectFit: "contain", ...style }} />
 );
@@ -85,25 +107,11 @@ const Badge = ({ label, color = C.greenPale, text = C.green }) => (
   <span style={{ background: color, color: text, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600, fontFamily: F.body, whiteSpace: "nowrap" }}>{label}</span>
 );
 
-const Card = ({ children, style = {}, onClick }) => {
+const Card = ({ children, style = {}, onClick, onMouseEnter, onMouseLeave }) => {
   const Tag = onClick ? "button" : "div";
   return (
-    <Tag 
-      onClick={onClick} 
-      style={{ 
-        background: C.card, 
-        borderRadius: 16, 
-        border: `1px solid ${C.border}`, 
-        padding: 20, 
-        boxShadow: "0 2px 12px rgba(108,33,168,0.06)", 
-        cursor: onClick ? "pointer" : "default", 
-        textAlign: "left",
-        width: "100%",
-        display: "block",
-        fontFamily: "inherit",
-        ...style 
-      }}
-    >
+    <Tag onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
+      style={{ background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, padding: 20, boxShadow: "0 2px 12px rgba(108,33,168,0.06)", cursor: onClick ? "pointer" : "default", textAlign: "left", width: "100%", display: "block", fontFamily: "inherit", ...style }}>
       {children}
     </Tag>
   );
@@ -125,9 +133,10 @@ const ProgressBar = ({ value, color = C.greenLight }) => (
 const Btn = ({ children, onClick, variant = "primary", disabled = false, full = false, style = {} }) => {
   const v = {
     primary: { background: disabled ? "#C4B5FD" : C.green, color: "#fff" },
-    ghost: { background: "none", color: C.muted, border: `1.5px solid ${C.border}` },
-    soft: { background: C.softGreen, color: C.green },
-    accent: { background: C.accent, color: "#fff" },
+    ghost:   { background: "none", color: C.muted, border: `1.5px solid ${C.border}` },
+    soft:    { background: C.softGreen, color: C.green },
+    accent:  { background: C.accent, color: "#fff" },
+    danger:  { background: "#FDECEA", color: C.accent },
   };
   return (
     <button onClick={onClick} disabled={disabled}
@@ -137,58 +146,272 @@ const Btn = ({ children, onClick, variant = "primary", disabled = false, full = 
   );
 };
 
-// ── Views ──────────────────────────────────────────────────────────────────
-const Dashboard = ({ setView, setSelectedPatient }) => {
-  const alerts = PATIENTS.filter(p => p.status === "alert").length;
-  const pending = DOUBTS.filter(d => !d.answered).length;
-  const avgAdherence = Math.round(PATIENTS.reduce((a, p) => a + p.adherence, 0) / PATIENTS.length);
+const FieldInput = ({ label, ...props }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    {label && <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>{label}</label>}
+    <input {...props} style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.body, fontSize: 13, background: C.bg, outline: "none", ...props.style }} />
+  </div>
+);
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+const Modal = ({ title, onClose, children }) => (
+  <div style={{ position: "fixed", inset: 0, background: "rgba(76,29,149,0.25)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+    onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="fade-up" style={{ background: C.card, borderRadius: 20, padding: 32, width: "100%", maxWidth: 540, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(76,29,149,0.2)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <h2 style={{ fontFamily: F.display, fontSize: 22, color: C.teal }}>{title}</h2>
+        <button onClick={onClose} style={{ background: C.greenPale, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: C.green }}>x</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+// ── AddPatientModal ────────────────────────────────────────────────────────
+const AddPatientModal = ({ onClose, onAdd, existingCodes }) => {
+  const empty = { name: "", age: "", rut: "", type: "Adulto", condition: "", nextControl: "", weight: "", glucose: "", pressure: "", exercise: "" };
+  const [form, setForm] = useState(empty);
+  const [err, setErr]   = useState("");
+  const [done, setDone] = useState(null);
+
+  const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErr(""); };
+
+  const handleAdd = () => {
+    if (!form.name.trim())  return setErr("El nombre es obligatorio.");
+    if (!form.rut.trim())   return setErr("El RUT es obligatorio.");
+    if (!form.nextControl)  return setErr("La fecha de proximo control es obligatoria.");
+
+    const code   = generateCode(form.name, existingCodes);
+    const parts  = form.name.trim().split(/\s+/);
+    const avatar = ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "??";
+
+    const newPatient = {
+      id:          Date.now(),
+      name:        form.name.trim(),
+      age:         parseInt(form.age)    || 0,
+      rut:         form.rut.trim(),
+      type:        form.type,
+      condition:   form.condition.trim() || "Sin especificar",
+      nextControl: form.nextControl,
+      adherence:   0,
+      weight:      parseFloat(form.weight)  || 0,
+      glucose:     parseFloat(form.glucose) || 0,
+      pressure:    form.pressure.trim()     || "-",
+      exercise:    parseInt(form.exercise)  || 0,
+      avatar,
+      status:  "pending",
+      habits:  [...DEFAULT_HABITS],
+    };
+
+    const newCode = { code, rut: form.rut.trim(), patientId: newPatient.id };
+    onAdd(newPatient, newCode);
+    setDone({ code, rut: form.rut.trim(), name: form.name.trim() });
+  };
+
+  if (done) return (
+    <Modal title="Paciente registrado" onClose={onClose}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
+        <p style={{ fontSize: 16, fontWeight: 700, color: C.teal, marginBottom: 8 }}>{done.name}</p>
+        <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>Comparte estas credenciales con el/la paciente para que pueda acceder a su portal.</p>
+        <div style={{ background: C.greenPale, borderRadius: 16, padding: 24, marginBottom: 24 }}>
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Codigo de acceso</p>
+            <p style={{ fontSize: 32, fontWeight: 800, color: C.green, letterSpacing: 4, fontFamily: "monospace" }}>{done.code}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>RUT registrado</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: C.teal, fontFamily: "monospace" }}>{done.rut}</p>
+          </div>
+        </div>
+        <p style={{ fontSize: 12, color: C.muted, marginBottom: 24, background: "#FEF3E2", padding: "8px 12px", borderRadius: 8 }}>
+          Guarda este codigo. No se puede recuperar despues.
+        </p>
+        <Btn onClick={onClose} full>Listo</Btn>
+      </div>
+    </Modal>
+  );
+
   return (
-    <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: C.teal, lineHeight: 1.2 }}>Buenos días ✨</h1>
-          <p style={{ color: C.muted, marginTop: 4 }}>Aquí tienes el resumen de tus pacientes para hoy.</p>
+    <Modal title="Nuevo Paciente" onClose={onClose}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <FieldInput label="Nombre completo *" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Maria Gonzalez" />
+          </div>
+          <FieldInput label="RUT *" value={form.rut} onChange={e => set("rut", e.target.value)} placeholder="12.345.678-9" />
+          <FieldInput label="Edad" type="number" value={form.age} onChange={e => set("age", e.target.value)} placeholder="28" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Tipo de paciente</label>
+            <select value={form.type} onChange={e => set("type", e.target.value)}
+              style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.body, fontSize: 13, background: C.bg, outline: "none" }}>
+              {PATIENT_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <FieldInput label="Condicion / diagnostico" value={form.condition} onChange={e => set("condition", e.target.value)} placeholder="Diabetes gestacional" />
+          </div>
+          <FieldInput label="Proximo control *" type="date" value={form.nextControl} onChange={e => set("nextControl", e.target.value)} />
+          <FieldInput label="Peso (kg)"        type="number" value={form.weight}   onChange={e => set("weight",   e.target.value)} placeholder="65" />
+          <FieldInput label="Glucosa (mg/dL)"  type="number" value={form.glucose}  onChange={e => set("glucose",  e.target.value)} placeholder="100" />
+          <FieldInput label="Presion arterial"              value={form.pressure} onChange={e => set("pressure", e.target.value)} placeholder="120/80" />
+          <FieldInput label="Ejercicio (d/sem)" type="number" value={form.exercise} onChange={e => set("exercise", e.target.value)} placeholder="3" />
+        </div>
+        {err && (
+          <p style={{ color: C.accent, fontSize: 12, fontWeight: 600, background: "#FDECEA", padding: "8px 12px", borderRadius: 8 }}>{err}</p>
+        )}
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <Btn variant="ghost" onClick={onClose} full>Cancelar</Btn>
+          <Btn onClick={handleAdd} full>Registrar y generar codigo</Btn>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-        <Card style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: C.greenPale, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>👥</div>
-          <div>
-            <p style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Pacientes</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: C.teal }}>{PATIENTS.length}</p>
+    </Modal>
+  );
+};
+
+// ── HabitEditorModal ───────────────────────────────────────────────────────
+const HabitEditorModal = ({ patient, onClose, onSave }) => {
+  const [habits,   setHabits]   = useState([...patient.habits]);
+  const [newHabit, setNewHabit] = useState("");
+  const [editIdx,  setEditIdx]  = useState(null);
+  const [editVal,  setEditVal]  = useState("");
+
+  const addHabit  = () => { const h = newHabit.trim(); if (!h) return; setHabits(p => [...p, h]); setNewHabit(""); };
+  const delHabit  = (i) => setHabits(p => p.filter((_, idx) => idx !== i));
+  const startEdit = (i) => { setEditIdx(i); setEditVal(habits[i]); };
+  const saveEdit  = () => {
+    if (!editVal.trim()) return;
+    setHabits(p => p.map((h, i) => i === editIdx ? editVal.trim() : h));
+    setEditIdx(null);
+  };
+
+  return (
+    <Modal title={"Habitos de " + patient.name.split(" ")[0]} onClose={onClose}>
+      <p style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>
+        Personaliza la lista de habitos que vera el/la paciente en su portal.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+        {habits.length === 0 && (
+          <p style={{ color: C.muted, fontSize: 13, textAlign: "center", padding: "16px 0", fontStyle: "italic" }}>
+            Sin habitos. Agrega uno abajo.
+          </p>
+        )}
+        {habits.map((h, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: C.bg, borderRadius: 10, padding: "8px 12px" }}>
+            <span style={{ fontSize: 14 }}>✅</span>
+            {editIdx === i ? (
+              <>
+                <input
+                  value={editVal} onChange={e => setEditVal(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && saveEdit()}
+                  autoFocus
+                  style={{ flex: 1, border: `1.5px solid ${C.greenLight}`, borderRadius: 8, padding: "6px 10px", fontFamily: F.body, fontSize: 13, outline: "none" }}
+                />
+                <button onClick={saveEdit}
+                  style={{ background: C.green, color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>OK</button>
+                <button onClick={() => setEditIdx(null)}
+                  style={{ background: C.greenPale, color: C.muted, border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12 }}>x</button>
+              </>
+            ) : (
+              <>
+                <span style={{ flex: 1, fontSize: 13, color: C.text }}>{h}</span>
+                <button onClick={() => startEdit(i)}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, padding: "0 4px", color: C.muted }} title="Editar">✏️</button>
+                <button onClick={() => delHabit(i)}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, padding: "0 4px", color: C.accent }} title="Eliminar">🗑️</button>
+              </>
+            )}
           </div>
-        </Card>
-        <Card style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#FDECEA", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>⚠️</div>
-          <div>
-            <p style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Alertas</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: C.accent }}>{alerts}</p>
-          </div>
-        </Card>
-        <Card style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: C.softGreen, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>💬</div>
-          <div>
-            <p style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Dudas</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: C.green }}>{pending}</p>
-          </div>
-        </Card>
-        <Card style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#E0F2FE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>📈</div>
-          <div>
-            <p style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Adherencia</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: "#0369A1" }}>{avgAdherence}%</p>
-          </div>
-        </Card>
+        ))}
       </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <input
+          value={newHabit} onChange={e => setNewHabit(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && addHabit()}
+          placeholder="Ej: No comer despues de las 8pm"
+          style={{ flex: 1, border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.body, fontSize: 13, outline: "none" }}
+        />
+        <Btn onClick={addHabit}>+ Agregar</Btn>
+      </div>
+
+      <div style={{ display: "flex", gap: 10 }}>
+        <Btn variant="ghost" onClick={onClose} full>Cancelar</Btn>
+        <Btn onClick={() => { onSave(habits); onClose(); }} full>Guardar habitos</Btn>
+      </div>
+    </Modal>
+  );
+};
+
+// ── PatientCodeModal ───────────────────────────────────────────────────────
+const PatientCodeModal = ({ patient, validCodes, onClose }) => {
+  const vc = validCodes.find(c => c.patientId === patient.id);
+  return (
+    <Modal title="Credenciales de acceso" onClose={onClose}>
+      <div style={{ textAlign: "center" }}>
+        <Avatar initials={patient.avatar} bg={typeColor(patient.type)} size={64} style={{ margin: "0 auto 16px" }} />
+        <p style={{ fontSize: 16, fontWeight: 700, color: C.teal, marginBottom: 20 }}>{patient.name}</p>
+        {vc ? (
+          <div style={{ background: C.greenPale, borderRadius: 16, padding: 24 }}>
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Codigo de acceso</p>
+              <p style={{ fontSize: 32, fontWeight: 800, color: C.green, letterSpacing: 4, fontFamily: "monospace" }}>{vc.code}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>RUT</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: C.teal, fontFamily: "monospace" }}>{vc.rut}</p>
+            </div>
+          </div>
+        ) : (
+          <p style={{ color: C.muted, fontSize: 14 }}>Este paciente no tiene codigo de acceso.</p>
+        )}
+        <Btn onClick={onClose} full style={{ marginTop: 20 }}>Cerrar</Btn>
+      </div>
+    </Modal>
+  );
+};
+
+// ── Views ──────────────────────────────────────────────────────────────────
+const Dashboard = ({ setView, setSelectedPatient, patients }) => {
+  const alerts        = patients.filter(p => p.status === "alert").length;
+  const pending       = DOUBTS.filter(d => !d.answered).length;
+  const avgAdherence  = patients.length ? Math.round(patients.reduce((a, p) => a + p.adherence, 0) / patients.length) : 0;
+
+  return (
+    <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div>
+        <h1 style={{ fontFamily: F.display, fontSize: 28, fontWeight: 700, color: C.teal }}>Buenos dias ✨</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Aqui tienes el resumen de tus pacientes para hoy.</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+        {[
+          { icon: "👥", label: "Pacientes",  val: patients.length,    color: C.teal,    bg: C.greenPale },
+          { icon: "⚠️", label: "Alertas",    val: alerts,             color: C.accent,  bg: "#FDECEA"   },
+          { icon: "💬", label: "Dudas",      val: pending,            color: C.green,   bg: C.softGreen },
+          { icon: "📈", label: "Adherencia", val: `${avgAdherence}%`, color: "#0369A1", bg: "#E0F2FE"   },
+        ].map(({ icon, label, val, color, bg }) => (
+          <Card key={label} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{icon}</div>
+            <div>
+              <p style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>{label}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color }}>{val}</p>
+            </div>
+          </Card>
+        ))}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 24 }}>
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
             <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal }}>Pacientes recientes</h3>
-            <button onClick={() => setView("patients")} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Ver todos →</button>
+            <button onClick={() => setView("patients")} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Ver todos</button>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {PATIENTS.slice(0, 4).map(p => (
-              <div key={p.id} onClick={() => { setSelectedPatient(p); setView("patient-detail"); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px", borderRadius: 12, cursor: "pointer", transition: "background 0.2s" }}
+            {patients.slice(0, 4).map(p => (
+              <div key={p.id} onClick={() => { setSelectedPatient(p); setView("patient-detail"); }}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 12, cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.background = C.greenPale}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <Avatar initials={p.avatar} bg={C.green} size={36} />
@@ -206,11 +429,12 @@ const Dashboard = ({ setView, setSelectedPatient }) => {
             ))}
           </div>
         </Card>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card style={{ flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal }}>Dudas pendientes</h3>
-              <button onClick={() => setView("doubts")} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Ver todas →</button>
+              <button onClick={() => setView("doubts")} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Ver todas</button>
             </div>
             {DOUBTS.filter(d => !d.answered).map(d => (
               <div key={d.id} style={{ borderLeft: `3px solid ${C.accent}`, paddingLeft: 12, marginBottom: 12 }}>
@@ -220,8 +444,8 @@ const Dashboard = ({ setView, setSelectedPatient }) => {
             ))}
           </Card>
           <Card>
-            <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 14 }}>Próximos controles</h3>
-            {PATIENTS.sort((a, b) => new Date(a.nextControl) - new Date(b.nextControl)).slice(0, 3).map(p => {
+            <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 14 }}>Proximos controles</h3>
+            {[...patients].sort((a, b) => new Date(a.nextControl) - new Date(b.nextControl)).slice(0, 3).map(p => {
               const days = daysUntil(p.nextControl);
               return (
                 <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -229,7 +453,7 @@ const Dashboard = ({ setView, setSelectedPatient }) => {
                     <Avatar initials={p.avatar} bg={typeColor(p.type)} size={30} />
                     <span style={{ fontSize: 13, fontWeight: 500 }}>{p.name}</span>
                   </div>
-                  <Badge label={days <= 3 ? `${days}d ⚡` : `${days} días`} color={days <= 3 ? "#FDECEA" : C.greenPale} text={days <= 3 ? C.accent : C.green} />
+                  <Badge label={days <= 3 ? `${days}d` : `${days} dias`} color={days <= 3 ? "#FDECEA" : C.greenPale} text={days <= 3 ? C.accent : C.green} />
                 </div>
               );
             })}
@@ -240,78 +464,126 @@ const Dashboard = ({ setView, setSelectedPatient }) => {
   );
 };
 
-const PatientsView = ({ setView, setSelectedPatient }) => {
-  const [filter, setFilter] = useState("Todos");
-  const types = ["Todos", ...new Set(PATIENTS.map(p => p.type))];
-  const filtered = filter === "Todos" ? PATIENTS : PATIENTS.filter(p => p.type === filter);
+// ── PatientsView ───────────────────────────────────────────────────────────
+const PatientsView = ({ setView, setSelectedPatient, patients, setPatients, validCodes, setValidCodes }) => {
+  const [filter,   setFilter]   = useState("Todos");
+  const [showAdd,  setShowAdd]  = useState(false);
+  const [showCode, setShowCode] = useState(null);
+
+  const types    = ["Todos", ...new Set(patients.map(p => p.type))];
+  const filtered = filter === "Todos" ? patients : patients.filter(p => p.type === filter);
+
+  const handleAdd = (newPatient, newCode) => {
+    setPatients(prev => [...prev, newPatient]);
+    setValidCodes(prev => [...prev, newCode]);
+  };
+
   return (
     <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {showAdd && (
+        <AddPatientModal onClose={() => setShowAdd(false)} onAdd={handleAdd} existingCodes={validCodes} />
+      )}
+      {showCode && (
+        <PatientCodeModal patient={showCode} validCodes={validCodes} onClose={() => setShowCode(null)} />
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <h2 style={{ fontFamily: F.display, fontSize: 24, color: C.teal }}>Mis Pacientes</h2>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {types.map(t => (
-            <button key={t} onClick={() => setFilter(t)} style={{ background: filter === t ? C.green : C.card, color: filter === t ? "#fff" : C.muted, border: `1px solid ${C.border}`, borderRadius: 20, padding: "6px 14px", fontFamily: F.body, fontSize: 12, cursor: "pointer", fontWeight: 500 }}>{t}</button>
-          ))}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {types.map(t => (
+              <button key={t} onClick={() => setFilter(t)}
+                style={{ background: filter === t ? C.green : C.card, color: filter === t ? "#fff" : C.muted, border: `1px solid ${C.border}`, borderRadius: 20, padding: "6px 14px", fontFamily: F.body, fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <Btn onClick={() => setShowAdd(true)}>+ Nuevo paciente</Btn>
         </div>
       </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
         {filtered.map(p => (
-          <Card key={p.id} style={{ cursor: "pointer", transition: "transform 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
-            onClick={() => { setSelectedPatient(p); setView("patient-detail"); }}>
-            <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
-              <Avatar initials={p.avatar} bg={typeColor(p.type)} size={48} />
-              <div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: C.text }}>{p.name}</h4>
-                <p style={{ fontSize: 12, color: C.muted }}>{p.type} · {p.age} años</p>
+          <div key={p.id}>
+            <Card style={{ cursor: "pointer", transition: "transform 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+              onClick={() => { setSelectedPatient(p); setView("patient-detail"); }}>
+              <div style={{ display: "flex", gap: 14, marginBottom: 16, alignItems: "flex-start" }}>
+                <Avatar initials={p.avatar} bg={typeColor(p.type)} size={48} />
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 700, color: C.text }}>{p.name}</h4>
+                  <p style={{ fontSize: 12, color: C.muted }}>{p.type} · {p.age} anos</p>
+                </div>
+                <button onClick={e => { e.stopPropagation(); setShowCode(p); }}
+                  title="Ver codigo de acceso"
+                  style={{ background: C.greenPale, border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 14, color: C.green, flexShrink: 0 }}>
+                  🔑
+                </button>
               </div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
-              <MetricChip label="Peso" value={p.weight} unit="kg" />
-              <MetricChip label="Glucosa" value={p.glucose} unit="mg/dL" color={p.glucose > 110 ? C.accent : C.green} />
-              <MetricChip label="Ejercicio" value={p.exercise} unit="d/s" />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>Adherencia</span>
-              <ProgressBar value={p.adherence} color={p.adherence > 75 ? C.greenLight : C.accent} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.green, whiteSpace: "nowrap" }}>{p.adherence}%</span>
-            </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: C.muted }}>Próximo control</span>
-              <Badge label={`${daysUntil(p.nextControl)} días`} color={daysUntil(p.nextControl) <= 4 ? "#FDECEA" : C.greenPale} text={daysUntil(p.nextControl) <= 4 ? C.accent : C.green} />
-            </div>
-          </Card>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+                <MetricChip label="Peso"    value={p.weight}   unit="kg" />
+                <MetricChip label="Glucosa" value={p.glucose}  unit="mg/dL" color={p.glucose > 110 ? C.accent : C.green} />
+                <MetricChip label="Ejerc."  value={p.exercise} unit="d/s" />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>Adherencia</span>
+                <ProgressBar value={p.adherence} color={p.adherence > 75 ? C.greenLight : C.accent} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.green, whiteSpace: "nowrap" }}>{p.adherence}%</span>
+              </div>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, color: C.muted }}>Proximo control</span>
+                <Badge label={`${daysUntil(p.nextControl)} dias`} color={daysUntil(p.nextControl) <= 4 ? "#FDECEA" : C.greenPale} text={daysUntil(p.nextControl) <= 4 ? C.accent : C.green} />
+              </div>
+            </Card>
+          </div>
         ))}
       </div>
     </div>
   );
 };
 
-const PatientDetail = ({ patient, onBack }) => {
-  const [checklist, setChecklist] = useState(HABITS.map(() => false));
-  const toggle = (i) => setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v));
+// ── PatientDetail ──────────────────────────────────────────────────────────
+const PatientDetail = ({ patient, onBack, onUpdatePatient }) => {
+  const [checklist,    setChecklist]    = useState(patient.habits.map(() => false));
+  const [showHabitEd,  setShowHabitEd] = useState(false);
   const done = checklist.filter(Boolean).length;
+
+  const toggle = (i) => setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v));
+
+  const handleSaveHabits = (newHabits) => {
+    onUpdatePatient({ ...patient, habits: newHabits });
+    setChecklist(newHabits.map(() => false));
+  };
+
   return (
     <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 14, cursor: "pointer", fontWeight: 600, alignSelf: "flex-start" }}>← Volver</button>
+      {showHabitEd && (
+        <HabitEditorModal patient={patient} onClose={() => setShowHabitEd(false)} onSave={handleSaveHabits} />
+      )}
+
+      <button onClick={onBack} style={{ background: "none", border: "none", color: C.greenLight, fontFamily: F.body, fontSize: 14, cursor: "pointer", fontWeight: 600, alignSelf: "flex-start" }}>
+        &larr; Volver
+      </button>
+
       <Card style={{ background: C.green, border: "none" }}>
         <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <Avatar initials={patient.avatar} bg={C.teal} size={56} />
           <div style={{ flex: 1 }}>
             <h2 style={{ fontFamily: F.display, fontSize: 22, color: "#fff", fontWeight: 700 }}>{patient.name}</h2>
-            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, marginTop: 2 }}>{patient.type} · {patient.age} años · {patient.condition}</p>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, marginTop: 2 }}>{patient.type} · {patient.age} anos · {patient.condition}</p>
           </div>
-          <Badge label={`Control en ${daysUntil(patient.nextControl)} días`} color="rgba(255,255,255,0.15)" text="#fff" />
+          <Badge label={`Control en ${daysUntil(patient.nextControl)} dias`} color="rgba(255,255,255,0.15)" text="#fff" />
         </div>
       </Card>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         <Card>
-          <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal, marginBottom: 14 }}>📊 Métricas del día</h3>
+          <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal, marginBottom: 14 }}>📊 Metricas del dia</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <MetricChip label="Peso" value={patient.weight} unit="kg" />
-            <MetricChip label="Glucosa" value={patient.glucose} unit="mg/dL" color={patient.glucose > 110 ? C.accent : C.green} />
-            <MetricChip label="Presión" value={patient.pressure} unit="" />
+            <MetricChip label="Peso"      value={patient.weight}   unit="kg" />
+            <MetricChip label="Glucosa"   value={patient.glucose}  unit="mg/dL" color={patient.glucose > 110 ? C.accent : C.green} />
+            <MetricChip label="Presion"   value={patient.pressure} unit="" />
             <MetricChip label="Ejercicio" value={patient.exercise} unit="d/s" />
           </div>
           <div style={{ marginTop: 14 }}>
@@ -322,14 +594,26 @@ const PatientDetail = ({ patient, onBack }) => {
             <ProgressBar value={patient.adherence} color={patient.adherence > 75 ? C.greenLight : C.accent} />
           </div>
         </Card>
+
         <Card>
-          <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal, marginBottom: 4 }}>✅ Checklist de hoy</h3>
-          <p style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>{done}/{HABITS.length} hábitos completados</p>
-          <ProgressBar value={(done / HABITS.length) * 100} color={C.greenLight} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+            <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal }}>✅ Checklist del paciente</h3>
+            <button onClick={() => setShowHabitEd(true)}
+              style={{ background: C.greenPale, border: "none", borderRadius: 8, padding: "6px 12px", color: C.green, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+              ✏️ Editar
+            </button>
+          </div>
+          <p style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>
+            {done}/{patient.habits.length} completados hoy
+          </p>
+          <ProgressBar value={patient.habits.length ? (done / patient.habits.length) * 100 : 0} color={C.greenLight} />
           <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
-            {HABITS.map((h, i) => (
-              <label key={h} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <input type="checkbox" checked={checklist[i]} onChange={() => toggle(i)} style={{ accentColor: C.green, width: 16, height: 16 }} />
+            {patient.habits.length === 0 && (
+              <p style={{ fontSize: 13, color: C.muted, fontStyle: "italic" }}>Sin habitos asignados. Haz clic en "Editar".</p>
+            )}
+            {patient.habits.map((h, i) => (
+              <label key={i} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" checked={checklist[i] || false} onChange={() => toggle(i)} style={{ accentColor: C.green, width: 16, height: 16 }} />
                 <span style={{ fontSize: 13, color: checklist[i] ? C.green : C.text, textDecoration: checklist[i] ? "line-through" : "none", transition: "all 0.2s" }}>{h}</span>
               </label>
             ))}
@@ -363,7 +647,7 @@ const DoubtsView = () => (
           {!d.answered && (
             <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
               <input type="text" placeholder="Escribe tu respuesta..." style={{ flex: 1, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, outline: "none" }} />
-              <Btn variant="primary" style={{ padding: "8px 16px" }}>Responder</Btn>
+              <Btn style={{ padding: "8px 16px" }}>Responder</Btn>
             </div>
           )}
         </Card>
@@ -381,36 +665,33 @@ const MaterialsView = () => {
         <Btn onClick={() => setShowAdd(!showAdd)} variant={showAdd ? "ghost" : "primary"}>{showAdd ? "Cancelar" : "+ Subir Material"}</Btn>
       </div>
       {showAdd && (
-        <Card className="fade-up">
-          <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 16 }}>Nuevo Tríptico o Guía</h3>
+        <Card>
+          <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 16 }}>Nuevo Triptico o Guia</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 12, color: C.muted }}>Título</label>
-              <input type="text" placeholder="Ej: Guía de colaciones" style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontSize: 13, background: C.bg }} />
+              <label style={{ fontSize: 12, color: C.muted }}>Titulo</label>
+              <input type="text" placeholder="Ej: Guia de colaciones" style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontSize: 13, background: C.bg, outline: "none" }} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 12, color: C.muted }}>Categoría</label>
-              <select style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontSize: 13, background: C.bg }}>
-                <option>ECNT</option>
-                <option>Maternidad</option>
-                <option>Adulto Mayor</option>
-                <option>General</option>
+              <label style={{ fontSize: 12, color: C.muted }}>Categoria</label>
+              <select style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontSize: 13, background: C.bg, outline: "none" }}>
+                <option>ECNT</option><option>Maternidad</option><option>Adulto Mayor</option><option>General</option>
               </select>
             </div>
           </div>
-          <div style={{ marginTop: 12, border: `2px dashed ${C.greenLight}`, borderRadius: 12, padding: "24px", textAlign: "center", cursor: "pointer" }}>
+          <div style={{ marginTop: 12, border: `2px dashed ${C.greenLight}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }}>
             <p style={{ fontSize: 24, marginBottom: 8 }}>📄</p>
-            <p style={{ fontSize: 13, color: C.muted }}>Arrastra tu tríptico aquí o <span style={{ color: C.greenLight, fontWeight: 600 }}>selecciona</span></p>
-            <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Solo PDF · Máx. 20MB</p>
+            <p style={{ fontSize: 13, color: C.muted }}>Arrastra tu triptico aqui o <span style={{ color: C.greenLight, fontWeight: 600 }}>selecciona</span></p>
+            <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Solo PDF · Max. 20MB</p>
           </div>
-          <Btn variant="primary" style={{ marginTop: 14 }}>Publicar material</Btn>
+          <Btn style={{ marginTop: 14 }}>Publicar material</Btn>
         </Card>
       )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
         {MATERIALS.map(m => (
           <Card key={m.id} style={{ cursor: "pointer" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
               <span style={{ fontSize: 32 }}>📄</span>
               <Badge label={m.category} color={typeColor(m.category)} text={C.teal} />
@@ -419,7 +700,7 @@ const MaterialsView = () => {
             <p style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>{m.date}</p>
             <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 12, color: C.muted }}>📥 {m.downloads} descargas</span>
-              <Badge label="Tríptico PDF" color={C.greenPale} text={C.green} />
+              <Badge label="PDF" color={C.greenPale} text={C.green} />
             </div>
           </Card>
         ))}
@@ -428,13 +709,13 @@ const MaterialsView = () => {
   );
 };
 
-const ControlsView = () => (
+const ControlsView = ({ patients }) => (
   <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
     <h2 style={{ fontFamily: F.display, fontSize: 24, color: C.teal }}>Controles y Citas</h2>
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal }}>Próximos controles</h3>
-        {PATIENTS.sort((a, b) => new Date(a.nextControl) - new Date(b.nextControl)).map(p => {
+        <h3 style={{ fontFamily: F.display, fontSize: 17, color: C.teal }}>Proximos controles</h3>
+        {[...patients].sort((a, b) => new Date(a.nextControl) - new Date(b.nextControl)).map(p => {
           const days = daysUntil(p.nextControl);
           return (
             <Card key={p.id} style={{ borderLeft: `4px solid ${days <= 3 ? C.accent : C.greenLight}` }}>
@@ -447,7 +728,7 @@ const ControlsView = () => (
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <Badge label={days <= 3 ? `¡En ${days} días!` : `${days} días`} color={days <= 3 ? "#FDECEA" : C.greenPale} text={days <= 3 ? C.accent : C.green} />
+                  <Badge label={days <= 3 ? `En ${days} dias!` : `${days} dias`} color={days <= 3 ? "#FDECEA" : C.greenPale} text={days <= 3 ? C.accent : C.green} />
                   <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{p.nextControl}</p>
                 </div>
               </div>
@@ -462,31 +743,63 @@ const ControlsView = () => (
             <label style={{ fontSize: 12, color: C.muted, display: "block", marginBottom: 4 }}>Paciente</label>
             <select style={{ width: "100%", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.body, fontSize: 13, background: C.bg, outline: "none" }}>
               <option value="">Selecciona un paciente</option>
-              {PATIENTS.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+              {patients.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
             </select>
           </div>
           <div>
             <label style={{ fontSize: 12, color: C.muted, display: "block", marginBottom: 4 }}>Fecha y Hora</label>
             <input type="datetime-local" style={{ width: "100%", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", fontFamily: F.body, fontSize: 13, background: C.bg, outline: "none" }} />
           </div>
-          <Btn variant="primary" full style={{ marginTop: 8 }}>Confirmar Cita</Btn>
+          <Btn full style={{ marginTop: 8 }}>Confirmar Cita</Btn>
         </div>
       </Card>
     </div>
   </div>
 );
 
-const PatientLogin = ({ onLogin, onBack }) => {
-  const [code, setCode] = useState("");
-  const [rut, setRut] = useState("");
+// ── Auth screens ───────────────────────────────────────────────────────────
+const NutritionistLogin = ({ onLogin, onBack }) => {
+  const [pw, setPw]   = useState("");
   const [err, setErr] = useState("");
-  const normalize = (s) => s.replace(/[-\s]/g, "").toUpperCase();
   const handle = () => {
-    const v = VALID_CODES.find(c =>
-      normalize(c.code) === normalize(code) && c.rut === rut.trim()
-    );
-    if (v) onLogin(PATIENTS.find(p => p.id === v.patientId));
-    else setErr("Código o RUT incorrecto. Verifica tus datos.");
+    if (pw === "nutri123") onLogin();
+    else setErr("Contrasena incorrecta. Intentalo de nuevo.");
+  };
+  return (
+    <div className="fade-up" style={{ maxWidth: 400, margin: "80px auto", padding: 20 }}>
+      <Card style={{ padding: 32, textAlign: "center" }}>
+        <Logo height={60} style={{ marginBottom: 24 }} />
+        <div style={{ fontSize: 40, marginBottom: 12 }}>👩‍⚕️</div>
+        <h2 style={{ fontFamily: F.display, fontSize: 24, color: C.teal, marginBottom: 8 }}>Acceso Nutricionista</h2>
+        <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>Ingresa tu contrasena para continuar</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Contrasena</label>
+            <input type="password" value={pw}
+              onChange={e => { setPw(e.target.value); setErr(""); }}
+              onKeyDown={e => e.key === "Enter" && handle()}
+              placeholder="••••••••"
+              style={{ width: "100%", border: `1.5px solid ${err ? C.accent : C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none", fontFamily: F.body }} />
+          </div>
+          {err && <p style={{ color: C.accent, fontSize: 12, fontWeight: 600 }}>{err}</p>}
+          <Btn onClick={handle} full style={{ marginTop: 8 }}>Ingresar</Btn>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>
+            &larr; Volver al inicio
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const PatientLogin = ({ onLogin, onBack, patients, validCodes }) => {
+  const [code, setCode] = useState("");
+  const [rut,  setRut]  = useState("");
+  const [err,  setErr]  = useState("");
+  const handle = () => {
+    const v = validCodes.find(c => normalize(c.code) === normalize(code) && c.rut === rut.trim());
+    if (v) onLogin(patients.find(p => p.id === v.patientId));
+    else setErr("Codigo o RUT incorrecto. Verifica tus datos.");
   };
   return (
     <div className="fade-up" style={{ maxWidth: 400, margin: "80px auto", padding: 20 }}>
@@ -496,16 +809,20 @@ const PatientLogin = ({ onLogin, onBack }) => {
         <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>Ingresa tus datos para ver tu plan nutricional</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Código de acceso</label>
-            <input type="text" value={code} onChange={e => { setCode(e.target.value); setErr(""); }} placeholder="Ej: MG2847 o MG-2847" style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none" }} />
+            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Codigo de acceso</label>
+            <input type="text" value={code} onChange={e => { setCode(e.target.value); setErr(""); }} placeholder="Ej: MG2847 o MG-2847"
+              style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none" }} />
           </div>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>RUT</label>
-            <input type="text" value={rut} onChange={e => { setRut(e.target.value); setErr(""); }} placeholder="12.345.678-9" style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none" }} />
+            <input type="text" value={rut} onChange={e => { setRut(e.target.value); setErr(""); }} placeholder="12.345.678-9"
+              style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none" }} />
           </div>
           {err && <p style={{ color: C.accent, fontSize: 12, fontWeight: 600 }}>{err}</p>}
           <Btn onClick={handle} full style={{ marginTop: 8 }}>Ingresar</Btn>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>← Volver al inicio</button>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>
+            &larr; Volver al inicio
+          </button>
         </div>
       </Card>
     </div>
@@ -513,9 +830,9 @@ const PatientLogin = ({ onLogin, onBack }) => {
 };
 
 const PatientPortal = ({ patient, onLogout }) => {
-  const [checklist, setChecklist] = useState(HABITS.map(() => false));
+  const [checklist, setChecklist] = useState(patient.habits.map(() => false));
   const toggle = (i) => setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v));
-  const done = checklist.filter(Boolean).length;
+  const done   = checklist.filter(Boolean).length;
   return (
     <div className="fade-up" style={{ minHeight: "100vh", background: C.bg }}>
       <nav style={{ background: "#fff", padding: "12px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 10 }}>
@@ -527,30 +844,35 @@ const PatientPortal = ({ patient, onLogout }) => {
       </nav>
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px", display: "flex", flexDirection: "column", gap: 20 }}>
         <Card style={{ background: C.green, border: "none", color: "#fff" }}>
-          <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700 }}>¡Hola, {patient.name.split(" ")[0]}! 👋</h2>
-          <p style={{ opacity: 0.9, fontSize: 14, marginTop: 4 }}>Tu próximo control es en {daysUntil(patient.nextControl)} días ({patient.nextControl})</p>
+          <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700 }}>Hola, {patient.name.split(" ")[0]}! 👋</h2>
+          <p style={{ opacity: 0.9, fontSize: 14, marginTop: 4 }}>Tu proximo control es en {daysUntil(patient.nextControl)} dias ({patient.nextControl})</p>
         </Card>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <Card>
-            <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 16 }}>✅ Mis hábitos de hoy</h3>
+            <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 16 }}>✅ Mis habitos de hoy</h3>
+            {patient.habits.length === 0 && (
+              <p style={{ color: C.muted, fontSize: 13, fontStyle: "italic" }}>Tu nutricionista aun no ha asignado habitos.</p>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {HABITS.map((h, i) => (
-                <label key={h} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
-                  <input type="checkbox" checked={checklist[i]} onChange={() => toggle(i)} style={{ accentColor: C.green, width: 18, height: 18 }} />
+              {patient.habits.map((h, i) => (
+                <label key={i} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                  <input type="checkbox" checked={checklist[i] || false} onChange={() => toggle(i)} style={{ accentColor: C.green, width: 18, height: 18 }} />
                   <span style={{ fontSize: 14, color: checklist[i] ? C.green : C.text, textDecoration: checklist[i] ? "line-through" : "none" }}>{h}</span>
                 </label>
               ))}
             </div>
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-              <p style={{ fontSize: 12, color: C.muted, marginBottom: 8 }}>Progreso del día: {Math.round((done / HABITS.length) * 100)}%</p>
-              <ProgressBar value={(done / HABITS.length) * 100} color={C.greenLight} />
-            </div>
+            {patient.habits.length > 0 && (
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                <p style={{ fontSize: 12, color: C.muted, marginBottom: 8 }}>Progreso del dia: {Math.round((done / patient.habits.length) * 100)}%</p>
+                <ProgressBar value={(done / patient.habits.length) * 100} color={C.greenLight} />
+              </div>
+            )}
           </Card>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <Card>
               <h3 style={{ fontFamily: F.display, fontSize: 18, color: C.teal, marginBottom: 12 }}>💬 Mensajes de tu Nutri</h3>
               <div style={{ background: C.greenPale, padding: 12, borderRadius: 12, borderLeft: `4px solid ${C.green}` }}>
-                <p style={{ fontSize: 13, color: C.teal, lineHeight: 1.4 }}>"¡Excelente avance esta semana! Tu adherencia ha subido un 10%. Sigue así con la hidratación."</p>
+                <p style={{ fontSize: 13, color: C.teal, lineHeight: 1.4 }}>Excelente avance esta semana! Tu adherencia ha subido un 10%. Sigue asi con la hidratacion.</p>
                 <p style={{ fontSize: 10, color: C.green, marginTop: 6, fontWeight: 700 }}>HACE 2 HORAS</p>
               </div>
             </Card>
@@ -559,7 +881,7 @@ const PatientPortal = ({ patient, onLogout }) => {
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 10, background: C.bg, borderRadius: 12, cursor: "pointer" }}>
                 <span style={{ fontSize: 24 }}>📄</span>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600 }}>Guía de porciones</p>
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>Guia de porciones</p>
                   <p style={{ fontSize: 11, color: C.muted }}>PDF · 2.4 MB</p>
                 </div>
               </div>
@@ -571,140 +893,133 @@ const PatientPortal = ({ patient, onLogout }) => {
   );
 };
 
-// ── NutritionistLogin ──────────────────────────────────────────────────────
-const NutritionistLogin = ({ onLogin, onBack }) => {
-  const [pw, setPw] = useState("");
-  const [err, setErr] = useState("");
-  const handle = () => {
-    if (pw === "nutri123") onLogin();
-    else setErr("Contraseña incorrecta. Inténtalo de nuevo.");
-  };
-  return (
-    <div className="fade-up" style={{ maxWidth: 400, margin: "80px auto", padding: 20 }}>
-      <Card style={{ padding: 32, textAlign: "center" }}>
-        <Logo height={60} style={{ marginBottom: 24 }} />
-        <div style={{ fontSize: 40, marginBottom: 12 }}>👩‍⚕️</div>
-        <h2 style={{ fontFamily: F.display, fontSize: 24, color: C.teal, marginBottom: 8 }}>Acceso Nutricionista</h2>
-        <p style={{ color: C.muted, fontSize: 14, marginBottom: 24 }}>Ingresa tu contraseña para continuar</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase" }}>Contraseña</label>
-            <input
-              type="password"
-              value={pw}
-              onChange={e => { setPw(e.target.value); setErr(""); }}
-              onKeyDown={e => e.key === "Enter" && handle()}
-              placeholder="••••••••"
-              style={{ width: "100%", border: `1.5px solid ${err ? C.accent : C.border}`, borderRadius: 12, padding: "12px", marginTop: 6, outline: "none", fontFamily: F.body }}
-            />
-          </div>
-          {err && <p style={{ color: C.accent, fontSize: 12, fontWeight: 600 }}>{err}</p>}
-          <Btn onClick={handle} full style={{ marginTop: 8 }}>Ingresar</Btn>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>← Volver al inicio</button>
-        </div>
-      </Card>
-    </div>
-  );
-};
-
 // ── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
-  const [mode, setMode] = useState("landing"); // landing, nutri-login, nutrition, patient-login, patient-portal
-  const [view, setView] = useState("dashboard");
+  const [mode,            setMode]           = useState("landing");
+  const [view,            setView]           = useState("dashboard");
+  const [patients,        setPatients]       = useState(INITIAL_PATIENTS);
+  const [validCodes,      setValidCodes]     = useState(INITIAL_VALID_CODES);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [loggedPatient, setLoggedPatient] = useState(null);
+  const [loggedPatient,   setLoggedPatient]  = useState(null);
+  const [sidebarOpen,     setSidebarOpen]    = useState(true);
 
-  const renderNutritionView = () => {
-    if (view === "patient-detail" && selectedPatient) return <PatientDetail patient={selectedPatient} onBack={() => setView("patients")} />;
-    if (view === "patients") return <PatientsView setView={setView} setSelectedPatient={setSelectedPatient} />;
-    if (view === "doubts") return <DoubtsView />;
-    if (view === "materials") return <MaterialsView />;
-    if (view === "controls") return <ControlsView />;
-    return <Dashboard setView={setView} setSelectedPatient={setSelectedPatient} />;
+  const handleUpdatePatient = (updated) => {
+    setPatients(prev => prev.map(p => p.id === updated.id ? updated : p));
+    setSelectedPatient(updated);
   };
-
-  const NAV = [
-    { id: "dashboard", label: "Dashboard", icon: "🏠" },
-    { id: "patients", label: "Pacientes", icon: "👥" },
-    { id: "doubts", label: "Dudas", icon: "💬" },
-    { id: "materials", label: "Materiales", icon: "📚" },
-    { id: "controls", label: "Controles", icon: "📅" },
-  ];
 
   const pendingDoubts = DOUBTS.filter(d => !d.answered).length;
 
-  if (mode === "nutri-login") return <NutritionistLogin onLogin={() => setMode("nutrition")} onBack={() => setMode("landing")} />;
-  if (mode === "patient-login") return <PatientLogin onLogin={(p) => { setLoggedPatient(p); setMode("patient-portal"); }} onBack={() => setMode("landing")} />;
-  if (mode === "patient-portal") return <PatientPortal patient={loggedPatient} onLogout={() => setMode("landing")} />;
+  const NAV = [
+    { id: "dashboard", label: "Dashboard",   icon: "🏠" },
+    { id: "patients",  label: "Pacientes",   icon: "👥" },
+    { id: "doubts",    label: "Dudas",       icon: "💬" },
+    { id: "materials", label: "Materiales",  icon: "📚" },
+    { id: "controls",  label: "Controles",   icon: "📅" },
+  ];
 
-  if (mode === "nutrition") {
-    return (
-      <>
-        <style>{globalStyle}</style>
-        <div style={{ display: "flex", minHeight: "100vh", background: C.bg }}>
-          {/* Sidebar */}
-          <div style={{ width: sidebarOpen ? 240 : 80, background: C.teal, display: "flex", flexDirection: "column", padding: "24px 16px", position: "sticky", top: 0, height: "100vh", flexShrink: 0, transition: "width 0.25s ease", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", marginBottom: 32 }}>
-              {sidebarOpen && <Logo height={32} style={{ filter: "brightness(0) invert(1)" }} />}
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#fff" }}>{sidebarOpen ? "◀" : "▶"}</button>
-            </div>
-            <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-              {NAV.map(n => {
-                const active = view === n.id || (view === "patient-detail" && n.id === "patients");
-                return (
-                  <button key={n.id} onClick={() => setView(n.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 12, border: "none", background: active ? "rgba(255,255,255,0.15)" : "none", color: active ? "#fff" : "rgba(255,255,255,0.6)", cursor: "pointer", transition: "0.2s" }}>
-                    <span style={{ fontSize: 20 }}>{n.icon}</span>
-                    {sidebarOpen && <span style={{ fontWeight: active ? 600 : 400 }}>{n.label}</span>}
-                    {sidebarOpen && n.id === "doubts" && pendingDoubts > 0 && (
-                      <span style={{ background: C.accent, color: "#fff", borderRadius: 10, fontSize: 10, fontWeight: 700, padding: "2px 6px", marginLeft: "auto" }}>{pendingDoubts}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
-              <Avatar initials="TN" bg={C.greenLight} size={36} />
-              {sidebarOpen && (
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Tu nombre</p>
-                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Nutricionista</p>
-                </div>
-              )}
-            </div>
-            <button onClick={() => setMode("landing")} style={{ marginTop: 16, background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", textAlign: "left", padding: "8px 12px" }}>← Cerrar sesión</button>
-          </div>
-          {/* Main content */}
-          <div style={{ flex: 1, padding: 32, overflowY: "auto" }}>
-            {renderNutritionView()}
-          </div>
-        </div>
-      </>
+  const renderNutritionView = () => {
+    if (view === "patient-detail" && selectedPatient) return (
+      <PatientDetail patient={selectedPatient} onBack={() => setView("patients")} onUpdatePatient={handleUpdatePatient} />
     );
-  }
+    if (view === "patients")  return (
+      <PatientsView setView={setView} setSelectedPatient={setSelectedPatient} patients={patients} setPatients={setPatients} validCodes={validCodes} setValidCodes={setValidCodes} />
+    );
+    if (view === "doubts")    return <DoubtsView />;
+    if (view === "materials") return <MaterialsView />;
+    if (view === "controls")  return <ControlsView patients={patients} />;
+    return <Dashboard setView={setView} setSelectedPatient={setSelectedPatient} patients={patients} />;
+  };
 
+  // Auth guards
+  if (mode === "nutri-login") return (
+    <><style>{globalStyle}</style>
+      <NutritionistLogin onLogin={() => setMode("nutrition")} onBack={() => setMode("landing")} />
+    </>
+  );
+  if (mode === "patient-login") return (
+    <><style>{globalStyle}</style>
+      <PatientLogin onLogin={(p) => { setLoggedPatient(p); setMode("patient-portal"); }} onBack={() => setMode("landing")} patients={patients} validCodes={validCodes} />
+    </>
+  );
+  if (mode === "patient-portal" && loggedPatient) return (
+    <><style>{globalStyle}</style>
+      <PatientPortal patient={loggedPatient} onLogout={() => setMode("landing")} />
+    </>
+  );
+
+  // Nutrition panel
+  if (mode === "nutrition") return (
+    <>
+      <style>{globalStyle}</style>
+      <div style={{ display: "flex", minHeight: "100vh", background: C.bg }}>
+        {/* Sidebar */}
+        <div style={{ width: sidebarOpen ? 240 : 80, background: C.teal, display: "flex", flexDirection: "column", padding: "24px 16px", position: "sticky", top: 0, height: "100vh", flexShrink: 0, transition: "width 0.25s ease", overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", marginBottom: 32 }}>
+            {sidebarOpen && <Logo height={32} style={{ filter: "brightness(0) invert(1)" }} />}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#fff" }}>
+              {sidebarOpen ? "◀" : "▶"}
+            </button>
+          </div>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+            {NAV.map(n => {
+              const active = view === n.id || (view === "patient-detail" && n.id === "patients");
+              return (
+                <button key={n.id} onClick={() => setView(n.id)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 12, border: "none", background: active ? "rgba(255,255,255,0.15)" : "none", color: active ? "#fff" : "rgba(255,255,255,0.6)", cursor: "pointer", transition: "0.2s" }}>
+                  <span style={{ fontSize: 20 }}>{n.icon}</span>
+                  {sidebarOpen && <span style={{ fontWeight: active ? 600 : 400 }}>{n.label}</span>}
+                  {sidebarOpen && n.id === "doubts" && pendingDoubts > 0 && (
+                    <span style={{ background: C.accent, color: "#fff", borderRadius: 10, fontSize: 10, fontWeight: 700, padding: "2px 6px", marginLeft: "auto" }}>{pendingDoubts}</span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16, display: "flex", alignItems: "center", gap: 12 }}>
+            <Avatar initials="TN" bg={C.greenLight} size={36} />
+            {sidebarOpen && (
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Tu nombre</p>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Nutricionista</p>
+              </div>
+            )}
+          </div>
+          <button onClick={() => setMode("landing")} style={{ marginTop: 16, background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", textAlign: "left", padding: "8px 12px" }}>
+            &larr; Cerrar sesion
+          </button>
+        </div>
+        {/* Main */}
+        <div style={{ flex: 1, padding: 32, overflowY: "auto" }}>
+          {renderNutritionView()}
+        </div>
+      </div>
+    </>
+  );
+
+  // Landing
   return (
     <div className="fade-up" style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <style>{globalStyle}</style>
       <Logo height={80} style={{ marginBottom: 32 }} />
       <p style={{ color: C.muted, fontSize: 16, marginBottom: 40, textAlign: "center" }}>Seguimiento nutricional personalizado</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 400 }}>
-        <Card onClick={() => setMode("nutri-login")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 20, padding: 24, transition: "transform 0.2s" }}
+        <Card onClick={() => setMode("nutri-login")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 20, padding: 24 }}
           onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
           onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
           <div style={{ fontSize: 32 }}>👩‍⚕️</div>
           <div>
             <h3 style={{ color: C.teal, fontSize: 18, fontWeight: 700 }}>Soy nutricionista</h3>
-            <p style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Gestiona pacientes, planes y seguimiento →</p>
+            <p style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Gestiona pacientes, planes y seguimiento</p>
           </div>
         </Card>
-        <Card onClick={() => setMode("patient-login")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 20, padding: 24, transition: "transform 0.2s" }}
+        <Card onClick={() => setMode("patient-login")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 20, padding: 24 }}
           onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
           onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
           <div style={{ fontSize: 32 }}>🧑‍💼</div>
           <div>
             <h3 style={{ color: C.teal, fontSize: 18, fontWeight: 700 }}>Soy paciente</h3>
-            <p style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Ingresa con tu código de acceso →</p>
+            <p style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Ingresa con tu codigo de acceso</p>
           </div>
         </Card>
       </div>
