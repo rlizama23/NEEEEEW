@@ -1,9 +1,0 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { 
-  font-family: 'DM Sans', sans-serif; 
-  background: #F5F0FA;
-  -webkit-font-smoothing: antialiased;
-}
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #E9D5FF; }
-::-webkit-scrollbar-thumb { background: #A855F7; border-radius: 4px; }
